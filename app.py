@@ -22,10 +22,9 @@ def login():
     if request.method=='POST':
         username=request.form['username']
         password=request.form['password']
-        hash_password = generate_password_hash(password)
         res=con.cursor()
-        sql='select * from login where username=%s and password=%s'
-        value=(username,hash_password)
+        sql='select * from login where username=%s'
+        value=(username,)
         res.execute(sql,value)
         user=res.fetchone()
 
@@ -37,6 +36,31 @@ def login():
             return 'Invaild username or password'
     return render_template('login.html')
 
+#resgister page
+@app.route('/resgister',methods=['GET','POST'])
+def resgister():
+    if request.method=='POST':
+        username = request.form['username']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        
+        if password != confirm_password:
+            return 'Password does not match'
+        
+        #hash password
+        hash_password = generate_password_hash(password)
+        
+        res=con.cursor(dictionary=True)
+        sql='insert into login (username,password) value (%s,%s)'
+        value=(username,hash_password)
+        try:
+            res.execute(sql,value)
+            con.commit()
+
+            return redirect(url_for('login'))
+        except:
+            return 'username already exists'
+    return render_template('resgister.html')
 
 if __name__=="__main__":
     app.secert_key="Ajith123"
